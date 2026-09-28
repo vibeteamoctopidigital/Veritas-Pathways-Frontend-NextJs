@@ -4,6 +4,13 @@ import { formatCountryName } from '../../../../utils/formatName';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ImageUploadField from '../../../../components/ui/ImageUploadField';
+import { errorsFromResponse, hasErrors, rules, validate } from '../../../../utils/validation';
+
+// Same rules the API applies (see src/utils/validation.js).
+const RULES = {
+    name: rules.universityName(),
+    country: rules.required('Country'),
+};
 
 const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
     const [formData, setFormData] = useState({ name: '', country: '', imageId: '' });
@@ -12,6 +19,7 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
     const [pickerKey, setPickerKey] = useState(0);
     const [uploading, setUploading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchCountries = async () => {
@@ -56,6 +64,9 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const clientErrors = validate(formData, RULES);
+        setErrors(clientErrors);
+        if (hasErrors(clientErrors)) return;
         setSaving(true);
         try {
             const response = mode === 'edit'
@@ -75,6 +86,7 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
             // A failed request still resolves, so the flag has to be checked or
             // the modal reports success on an error.
             if (response?.success === false) {
+                setErrors(errorsFromResponse(response));
                 throw new Error(response.message || 'Request failed');
             }
 
@@ -109,7 +121,7 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">
                             Name <span className="text-red-500">*</span>
@@ -117,11 +129,16 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
                         <input
                             type="text"
                             value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            onChange={(e) => {
+                                setFormData({ ...formData, name: e.target.value });
+                                setErrors({ ...errors, name: undefined });
+                            }}
+                            maxLength={120}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#22B2A8] focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                             placeholder="Enter university name"
                             required
                         />
+                        {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
                     </div>
 
                     <div>
@@ -130,8 +147,11 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
                         </label>
                         <select
                             value={formData.country}
-                            onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 capitalize"
+                            onChange={(e) => {
+                                setFormData({ ...formData, country: e.target.value });
+                                setErrors({ ...errors, country: undefined });
+                            }}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#22B2A8] focus:border-transparent capitalize ${errors.country ? 'border-red-500' : 'border-gray-300'}`}
                             required
                         >
                             <option value="">Select a country</option>
@@ -141,6 +161,7 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
                                 </option>
                             ))}
                         </select>
+                        {errors.country && <p className="text-red-600 text-xs mt-1">{errors.country}</p>}
                     </div>
 
                     <ImageUploadField

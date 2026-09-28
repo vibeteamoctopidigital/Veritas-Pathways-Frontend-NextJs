@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Info, Plus, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { baseAPI } from '../../../../config/api';
+import { hasErrors, rules, validate } from '../../../../utils/validation';
 
 // A course can be reached through several programmes (e.g. Accounting and
 // Finance via the Foundation Year and via Year One). The database stores one
@@ -54,7 +55,25 @@ const emptyProgramme = (programType = 'International Foundation Year') => ({
     notes: '',
 });
 
+// The schema accepts intake years in this range.
+const MIN_INTAKE_YEAR = 2020;
+const MAX_INTAKE_YEAR = 2035;
+
+// Entry is an academic year written "2025/26". Offering the years as a list
+// keeps that format consistent (a number input cannot hold "/", and free text
+// lets through "2025-26" or "25/26").
+const academicYear = (start) => `${start}/${String((start + 1) % 100).padStart(2, '0')}`;
+const INTAKE_YEARS = Array.from(
+    { length: MAX_INTAKE_YEAR - MIN_INTAKE_YEAR + 1 },
+    (_, i) => MIN_INTAKE_YEAR + i,
+);
+const ACADEMIC_YEARS = Array.from(
+    { length: MAX_INTAKE_YEAR - MIN_INTAKE_YEAR + 1 },
+    (_, i) => academicYear(MIN_INTAKE_YEAR + i),
+);
+
 const emptyDetails = {
+    intakeYear: '',
     university: '',
     subject: '',
     degree: '',
@@ -86,22 +105,62 @@ const numberOrNull = (value) => (value === '' || value === null || value === und
 // code so that its programmes still group together.
 const generateCourseCode = () => `VP${Date.now().toString(36).toUpperCase()}`;
 
+// Same rules the API applies (see src/utils/validation.js).
+const DETAIL_RULES = {
+    university: rules.required('University'),
+    subject: rules.subject(),
+    degree: rules.degree(),
+    courseCode: rules.courseCode(),
+    courseUrl: rules.url('Course page URL'),
+    universityUrl: rules.url('University international page URL'),
+};
+
+const PROGRAMME_RULES = {
+    programType: rules.programme(),
+    ifyPointsRequired: rules.ifyPoints(),
+    ifyGradesRequired: rules.ifyGrades(),
+    creditsRequired: rules.credits(),
+    averageScoreRequired: rules.averageScore(),
+    researchMethodsGrade: rules.researchGrade(),
+    notes: rules.notes(),
+};
+
+// Errors for programme cards are keyed "p<index>.<field>".
+const programmeErrors = (programmes) => {
+    const errors = {};
+    programmes.forEach((p, index) => {
+        Object.entries(validate(p, PROGRAMME_RULES)).forEach(([field, message]) => {
+            errors[`p${index}.${field}`] = message;
+        });
+        p.modules.forEach((value, slot) => {
+            const message = rules.moduleResult()(value);
+            if (message) errors[`p${index}.modules`] ??= `Module ${slot + 1}: ${message}`;
+        });
+    });
+    return errors;
+};
+
 const inputClass =
     'w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#22B2A8] focus:border-transparent';
 
-const Field = ({ label, hint, required, children, className = '' }) => (
+const Field = ({ label, hint, required, error, children, className = '' }) => (
     <label className={`block ${className}`}>
         <span className="block text-sm font-medium text-gray-700 mb-1.5">
             {label} {required && <span className="text-red-500">*</span>}
         </span>
         {children}
-        {hint && <span className="block mt-1 text-xs text-gray-500">{hint}</span>}
+        {error ? (
+            <span className="block mt-1 text-xs text-red-600">{error}</span>
+        ) : (
+            hint && <span className="block mt-1 text-xs text-gray-500">{hint}</span>
+        )}
     </label>
 );
 
-const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove }) => {
+const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove, errors = {} }) => {
     const groups = requirementGroupsFor(programme.programType);
-    const set = (field) => (e) => onChange({ ...programme, [field]: e.target.value });
+    const set = (field, transform = (v) => v) => (e) => onChange({ ...programme, [field]: transform(e.target.value) });
+    const err = (field) => errors[`p${index}.${field}`];
     const setEap = (field) => (e) => onChange({ ...programme, eap: { ...programme.eap, [field]: e.target.value } });
     const setModule = (slot) => (e) => {
         const modules = [...programme.modules];
@@ -115,7 +174,7 @@ const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove }) => {
                 <span className="mt-8 flex items-center justify-center w-6 h-6 rounded-full bg-[#22B2A8] text-white text-xs font-bold shrink-0">
                     {index + 1}
                 </span>
-                <Field label="Programme" required className="flex-1">
+                <Field label="Programme" required error={err('programType')} className="flex-1">
                     <input
                         list="course-programmes"
                         value={programme.programType}
@@ -141,27 +200,27 @@ const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-9">
                 {groups.includes('ify') && (
                     <>
-                        <Field label="IFY points">
-                            <input type="number" min="0" value={programme.ifyPointsRequired} onChange={set('ifyPointsRequired')} className={`${inputClass} bg-white`} placeholder="e.g. 120" />
+                        <Field label="IFY points" error={err('ifyPointsRequired')}>
+                            <input type="number" min="0" max="250" step="1" value={programme.ifyPointsRequired} onChange={set('ifyPointsRequired')} className={`${inputClass} bg-white`} placeholder="e.g. 120" />
                         </Field>
-                        <Field label="IFY grades">
-                            <input value={programme.ifyGradesRequired} onChange={set('ifyGradesRequired')} className={`${inputClass} bg-white`} placeholder="e.g. BBB" />
+                        <Field label="IFY grades" error={err('ifyGradesRequired')}>
+                            <input value={programme.ifyGradesRequired} onChange={set('ifyGradesRequired', (v) => v.toUpperCase().replace(/\s/g, ''))} maxLength={10} className={`${inputClass} bg-white`} placeholder="e.g. BBB" />
                         </Field>
                     </>
                 )}
                 {groups.includes('credits') && (
                     <>
-                        <Field label="Credits required">
-                            <input type="number" min="0" value={programme.creditsRequired} onChange={set('creditsRequired')} className={`${inputClass} bg-white`} placeholder="e.g. 120" />
+                        <Field label="Credits required" error={err('creditsRequired')}>
+                            <input type="number" min="0" max="480" step="1" value={programme.creditsRequired} onChange={set('creditsRequired')} className={`${inputClass} bg-white`} placeholder="e.g. 120" />
                         </Field>
-                        <Field label="Average score required">
-                            <input type="number" min="0" max="100" value={programme.averageScoreRequired} onChange={set('averageScoreRequired')} className={`${inputClass} bg-white`} placeholder="e.g. 60" />
+                        <Field label="Average score required" error={err('averageScoreRequired')}>
+                            <input type="number" min="0" max="100" step="any" value={programme.averageScoreRequired} onChange={set('averageScoreRequired')} className={`${inputClass} bg-white`} placeholder="e.g. 60" />
                         </Field>
                     </>
                 )}
                 {groups.includes('research') && (
-                    <Field label="Research Methods grade">
-                        <input value={programme.researchMethodsGrade} onChange={set('researchMethodsGrade')} className={`${inputClass} bg-white`} placeholder="e.g. Pass" />
+                    <Field label="Research Methods grade" error={err('researchMethodsGrade')}>
+                        <input value={programme.researchMethodsGrade} onChange={set('researchMethodsGrade')} maxLength={30} className={`${inputClass} bg-white`} placeholder="e.g. Pass" />
                     </Field>
                 )}
                 {groups.includes('modules') && (
@@ -171,6 +230,7 @@ const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove }) => {
                             {programme.modules.map((value, slot) => (
                                 <input
                                     key={slot}
+                                    maxLength={30}
                                     value={value}
                                     onChange={setModule(slot)}
                                     aria-label={`Module ${slot + 1}`}
@@ -179,6 +239,7 @@ const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove }) => {
                                 />
                             ))}
                         </div>
+                        {err('modules') && <span className="block mt-1 text-xs text-red-600">{err('modules')}</span>}
                     </div>
                 )}
             </div>
@@ -201,8 +262,8 @@ const ProgrammeCard = ({ programme, index, canRemove, onChange, onRemove }) => {
             </div>
 
             <div className="pl-9">
-                <Field label="Notes" hint="Subject requirements shown on the course page.">
-                    <textarea value={programme.notes} onChange={set('notes')} rows="2" className={`${inputClass} bg-white`} placeholder="e.g. IFY: Student must have strong Mathematics skills." />
+                <Field label="Notes" hint="Subject requirements shown on the course page. Up to 2,000 characters, no < or >." error={err('notes')}>
+                    <textarea value={programme.notes} onChange={set('notes')} maxLength={2000} rows="2" className={`${inputClass} bg-white`} placeholder="e.g. IFY: Student must have strong Mathematics skills." />
                 </Field>
             </div>
         </div>
@@ -215,6 +276,7 @@ const detailsFrom = (course) => ({
     degree: course.degree || '',
     courseCode: course.courseCode || '',
     version: course.version || '',
+    intakeYear: course.intakeYear ?? '',
     courseUrl: course.courseUrl || '',
     universityUrl: course.universityUrl || '',
     isActive: course.isActive ?? true,
@@ -225,12 +287,16 @@ const detailsFrom = (course) => ({
 const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
     const editing = mode === 'edit' && course;
     const [details, setDetails] = useState(() => (editing ? detailsFrom(course) : emptyDetails));
+    // Intake year is rarely needed (Entry covers it), so it stays hidden unless
+    // the course already has one or the admin chooses to add it.
+    const [showIntake, setShowIntake] = useState(() => Boolean(editing && course.intakeYear));
     const [programmes, setProgrammes] = useState(() =>
         editing ? (course.programmes?.length ? course.programmes : [course]).map(toProgrammeForm) : [emptyProgramme()],
     );
     const [removedIds, setRemovedIds] = useState([]);
     const [universities, setUniversities] = useState([]);
     const [saving, setSaving] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         let cancelled = false;
@@ -245,8 +311,12 @@ const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
         };
     }, []);
 
-    const setDetail = (field) => (e) =>
-        setDetails((prev) => ({ ...prev, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+    const setDetail = (field) => (e) => {
+        let value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        if (field === 'courseCode') value = value.toUpperCase().replace(/\s/g, '');
+        setDetails((prev) => ({ ...prev, [field]: value }));
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
 
     const updateProgramme = (index, next) =>
         setProgrammes((prev) => prev.map((p, i) => (i === index ? next : p)));
@@ -259,6 +329,12 @@ const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const clientErrors = { ...validate(details, DETAIL_RULES), ...programmeErrors(programmes) };
+        setErrors(clientErrors);
+        if (hasErrors(clientErrors)) {
+            toast.error('Please fix the highlighted fields.');
+            return;
+        }
         setSaving(true);
 
         const courseCode = details.courseCode.trim() || generateCourseCode();
@@ -268,6 +344,7 @@ const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
             degree: orNull(details.degree.trim()),
             courseCode,
             version: orNull(details.version.trim()),
+            intakeYear: numberOrNull(details.intakeYear),
             courseUrl: orNull(details.courseUrl.trim()),
             universityUrl: orNull(details.universityUrl.trim()),
             isActive: details.isActive,
@@ -321,13 +398,13 @@ const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto thin-scrollbar">
+                <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto thin-scrollbar">
                     <div className="p-6 space-y-8">
                         {/* Shared details */}
                         <section className="space-y-4">
                             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Course details</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Field label="University" required>
+                                <Field label="University" required error={errors.university}>
                                     <select value={details.university} onChange={setDetail('university')} required className={`${inputClass} capitalize`}>
                                         <option value="">Select a university</option>
                                         {universities.map((u) => (
@@ -335,23 +412,72 @@ const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
                                         ))}
                                     </select>
                                 </Field>
-                                <Field label="Subject" required>
-                                    <input value={details.subject} onChange={setDetail('subject')} required className={inputClass} placeholder="e.g. Accounting and Finance" />
+                                <Field label="Subject" required error={errors.subject}>
+                                    <input value={details.subject} onChange={setDetail('subject')} maxLength={200} required className={inputClass} placeholder="e.g. Accounting and Finance" />
                                 </Field>
-                                <Field label="Degree">
-                                    <input value={details.degree} onChange={setDetail('degree')} className={inputClass} placeholder="e.g. BSc" />
+                                <Field label="Degree" hint="Letters only, e.g. BSc, MBChB." error={errors.degree}>
+                                    <input value={details.degree} onChange={setDetail('degree')} maxLength={20} className={inputClass} placeholder="e.g. BSc" />
                                 </Field>
-                                <Field label="Entry" hint="The entry year shown on the course, e.g. 2025/26.">
-                                    <input value={details.version} onChange={setDetail('version')} className={inputClass} placeholder="e.g. 2025/26" />
-                                </Field>
-                                <Field label="Course page URL">
+                                <div>
+                                    <Field label="Entry" hint="The academic year shown on the course, e.g. 2025/26 entry.">
+                                        <select value={details.version} onChange={setDetail('version')} className={inputClass}>
+                                            <option value="">Not set</option>
+                                            {/* Keep an older value visible even if it is outside the list. */}
+                                            {details.version && !ACADEMIC_YEARS.includes(details.version) && (
+                                                <option value={details.version}>{details.version}</option>
+                                            )}
+                                            {ACADEMIC_YEARS.map((year) => (
+                                                <option key={year} value={year}>{year}</option>
+                                            ))}
+                                        </select>
+                                    </Field>
+                                    {!showIntake && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowIntake(true)}
+                                            className="mt-1.5 text-xs font-medium text-[#158e88] hover:underline"
+                                        >
+                                            + Add intake year
+                                        </button>
+                                    )}
+                                </div>
+                                {showIntake && (
+                                    <Field label="Intake year (optional)" hint="Shown only when Entry is empty.">
+                                        <div className="flex gap-2">
+                                            {/* A list, like Entry: only whole years the database accepts. */}
+                                            <select
+                                                value={details.intakeYear}
+                                                onChange={setDetail('intakeYear')}
+                                                className={inputClass}
+                                            >
+                                                <option value="">Not set</option>
+                                                {INTAKE_YEARS.map((year) => (
+                                                    <option key={year} value={year}>{year}</option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setDetails((prev) => ({ ...prev, intakeYear: '' }));
+                                                    setShowIntake(false);
+                                                }}
+                                                title="Remove intake year"
+                                                aria-label="Remove intake year"
+                                                className="px-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </Field>
+                                )}
+                                <Field label="Course page URL" error={errors.courseUrl}>
                                     <input type="url" value={details.courseUrl} onChange={setDetail('courseUrl')} className={inputClass} placeholder="https://" />
                                 </Field>
-                                <Field label="University international page URL">
+                                <Field label="University international page URL" error={errors.universityUrl}>
                                     <input type="url" value={details.universityUrl} onChange={setDetail('universityUrl')} className={inputClass} placeholder="https://" />
                                 </Field>
-                                <Field label="Course code" hint={mode === 'edit' ? 'Links the programmes below into one course.' : 'Optional. Generated automatically if left blank.'}>
-                                    <input value={details.courseCode} onChange={setDetail('courseCode')} className={inputClass} placeholder="e.g. CC00244" />
+                                <Field label="Course code" error={errors.courseCode} hint={mode === 'edit' ? 'Links the programmes below into one course.' : 'Optional. Generated automatically if left blank.'}>
+                                    <input value={details.courseCode} onChange={setDetail('courseCode')} maxLength={20} className={inputClass} placeholder="e.g. CC00244" />
                                 </Field>
                                 <label className="flex items-center gap-2 self-end pb-2 cursor-pointer">
                                     <input type="checkbox" checked={details.isActive} onChange={setDetail('isActive')} className="w-4 h-4 accent-[#22B2A8]" />
@@ -386,6 +512,7 @@ const EditModal = ({ onClose, course, onSave, mode = 'edit' }) => {
                             </datalist>
                             {programmes.map((programme, index) => (
                                 <ProgrammeCard
+                                    errors={errors}
                                     key={programme._id || `new-${index}`}
                                     programme={programme}
                                     index={index}

@@ -6,6 +6,7 @@ import ImageUploadField from '../../../../components/ui/ImageUploadField';
 import { formatCountryName } from '../../../../utils/formatName';
 import { countryCodeFor } from '../../../../utils/countryCodes';
 import { flagAssetFor } from '../../../../utils/flagAssets';
+import { errorsFromResponse, rules } from '../../../../utils/validation';
 
 const EditModal = ({ isOpen, onClose, country, onSave, mode = 'edit' }) => {
     const [formData, setFormData] = useState({ name: '', imageId: '' });
@@ -51,8 +52,8 @@ const EditModal = ({ isOpen, onClose, country, onSave, mode = 'edit' }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        const newErrors = { name: '', flag: '' };
-        if (!formData.name.trim()) newErrors.name = 'Country name is required';
+        // Same rule the API applies (see src/utils/validation.js).
+        const newErrors = { name: rules.countryName()(formData.name) || '', flag: '' };
         // No longer required: a flag is derived from the country name
         // automatically, and an upload only overrides it.
 
@@ -84,6 +85,8 @@ const EditModal = ({ isOpen, onClose, country, onSave, mode = 'edit' }) => {
                 onSave();
                 onClose();
             } else {
+                const serverErrors = errorsFromResponse(response);
+                if (serverErrors.name) setErrors({ name: serverErrors.name, flag: '' });
                 toast.error(response.message || (mode === 'edit' ? 'Failed to update country' : 'Failed to create country'));
             }
         } catch (error) {
@@ -108,7 +111,7 @@ const EditModal = ({ isOpen, onClose, country, onSave, mode = 'edit' }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">
                             Name <span className="text-red-500">*</span>
@@ -122,6 +125,7 @@ const EditModal = ({ isOpen, onClose, country, onSave, mode = 'edit' }) => {
                             }}
                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                             placeholder="Enter country name"
+                            maxLength={60}
                         />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                     </div>
