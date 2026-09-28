@@ -1,0 +1,60 @@
+
+
+[
+  {
+    "id": 1,
+    "title": "Minimalist Kitchen Overhaul",
+    "beforeImg": "../src/assets/Projects/B1.png",
+    "afterImg": "../src/assets/Projects/A1.png",
+    "tags": ["Kitchen Cabinets", "Crown Install"]
+  },
+  {
+    "id": 2,
+    "title": "Lush Garden Transformation",
+    "beforeImg": "../src/assets/Projects/B2.png",
+    "afterImg": "../src/assets/Projects/A2.png",
+    "tags": ["Trim Work","Finish Upgrade"]
+  },
+  {
+    "id": 3,
+    "title": "Master Ensuite Renovation",
+    "beforeImg": "../src/assets/Projects/B3.png",
+    "afterImg": "../src/assets/Projects/A3.png",
+    "tags": [ "Full Renovation","Kitchen Cabinets"]
+  },
+  {
+    "id": 4,
+    "title": "Downtown Office Loft",
+    "beforeImg": "../src/assets/Projects/B4.png",
+    "afterImg": "../src/assets/Projects/A4.png",
+    "tags": ["Installation", "Plumbing Ready"]
+  },
+  {
+    "id": 5,
+    "title": "Cozy Living Room Flip",
+    "beforeImg": "../src/assets/Projects/B5.png",
+    "afterImg": "../src/assets/Projects/A5.png",
+    "tags": ["Clean & Modern", "Installation"]
+  },
+  {
+    "id": 6,
+    "title": "Modernist Facade Refresh",
+    "beforeImg": "../src/assets/Projects/B6.png",
+    "afterImg": "../src/assets/Projects/A6.png",
+    "tags": ["Functional Storage", "Cabinets"]
+  },
+  {
+    "id": 7,
+    "title": "Bespoke Wine Cellar",
+    "beforeImg": "../src/assets/Projects/B7.png",
+    "afterImg": "../src/assets/Projects/A7.png",
+    "tags": ["Storage Upgrade", "Custom Shelving"]
+  },
+  {
+    "id": 8,
+    "title": "Rooftop Terrace Lounge",
+    "beforeImg": "../src/assets/Projects/B8.png",
+    "afterImg": "../src/assets/Projects/A8.png",
+    "tags": ["Bright Finish", "Layout Update"]
+  }
+]

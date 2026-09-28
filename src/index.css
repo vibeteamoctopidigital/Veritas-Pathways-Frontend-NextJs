@@ -1,0 +1,96 @@
+/* Fonts are self-hosted by next/font in src/app/layout.jsx, which sets
+   --font-plus-jakarta and --font-nunito-sans on <html>. */
+@import "tailwindcss";
+
+/* Tailwind v4 reads its palette from @theme, not tailwind.config.js. Without
+   this block the dashboard's bg-primary / text-primary-800 / ring-primary
+   classes generate no CSS at all, which is why the buttons rendered as white
+   text on a white background. The scale is built around the brand teal already
+   used by the sidebar and logo. */
+@theme {
+  /* Nunito Sans is the marketing site's typeface, sampled from the live page. */
+  --font-nunito: var(--font-nunito-sans), "Nunito Sans", sans-serif;
+
+  /* Brand teals sampled from veritaspathways.co.uk: rgb(26,157,143) for buttons
+     and rgb(34,178,168) for lighter accents. --color-ink is its heading colour. */
+  --color-brand: #1a9d8f;
+  --color-brand-light: #22b2a8;
+  --color-ink: #1b1b1b;
+
+  --color-primary: #22b2a8;
+  --color-primary-50: #eefbfa;
+  --color-primary-100: #d0f3f0;
+  --color-primary-200: #a5e8e3;
+  --color-primary-300: #6fd7d1;
+  --color-primary-400: #3cc0ba;
+  --color-primary-500: #22b2a8;
+  --color-primary-600: #158e88;
+  --color-primary-700: #14726e;
+  --color-primary-800: #155b58;
+  --color-primary-900: #164b49;
+}
+
+:root {
+  --primary: #274C77;
+  --text-primary: #F0F0F0;
+  --text-black: #1E1E1E;
+  --text-light: #F1F1F1;
+  --text-secondary: #555555;
+}
+
+body {
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.text-brand {
+  color: #365383;
+}
+/* 4px brand-teal scrollbar for short scrolling lists such as the course
+   filters. Only ::-webkit-scrollbar can set an exact width (Chrome, Edge,
+   Safari). Those browsers ignore it whenever scrollbar-width/-color apply, so
+   the standard properties are limited to Firefox, which gets its "thin" size. */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-brand-light);
+  border-radius: 9999px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-brand);
+}
+@supports (-moz-appearance: none) {
+  .thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-light) transparent;
+  }
+}
+
+/* Tailwind v4's preflight gives buttons the default arrow cursor. Restore the
+   pointer for anything clickable; in the base layer so a utility such as
+   cursor-not-allowed still wins. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  select,
+  summary,
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
