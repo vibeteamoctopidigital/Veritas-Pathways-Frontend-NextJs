@@ -89,8 +89,8 @@ const CourseCard = ({ course, onViewDetails }) => {
                     {/* Individual bands live in the details modal; showing all four
                         here made the tile unreadable at card width. */}
                     <span className="mt-1 flex items-center gap-2">
-                        <span className="inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#1BA39C] text-white font-bold text-sm">
-                            {course.eap?.overall ?? '—'}
+                        <span className={`inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#1BA39C] text-white font-bold ${course.eap?.overall ? 'text-sm' : 'text-[10px]'}`}>
+                            {course.eap?.overall ?? 'N/A'}
                         </span>
                         {bandCount > 0 && (
                             <span className="text-[11px] text-gray-500 leading-tight">

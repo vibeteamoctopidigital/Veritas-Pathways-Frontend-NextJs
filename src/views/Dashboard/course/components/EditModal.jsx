@@ -257,7 +257,7 @@ const EditModal = ({ isOpen, onClose, course, onSave, mode = 'edit' }) => {
                                         onChange={(e) => setEapField(field, e.target.value)}
                                         className={inputClass}
                                     >
-                                        <option value="">—</option>
+                                        <option value="">Not set</option>
                                         {EAP_GRADES.map((grade) => (
                                             <option key={grade} value={grade}>{grade}</option>
                                         ))}

@@ -188,12 +188,12 @@ const Course = ({
             {/* Header Section */}
             <div className="bg-white border-b border-gray-200">
                 <div className="container mx-auto px-4 py-12">
-                    <h1 className="text-4xl font-bold text-gray-900 text-center mb-4">
-                        Progression Opportunities In The UK And Beyond
+                    <h1 className="text-[28px] leading-tight sm:text-4xl font-bold text-gray-900 text-center mb-4">
+                        Progression Opportunities in the UK and Beyond
                     </h1>
                     <p className="text-center text-gray-600 max-w-4xl mx-auto leading-relaxed">
                         Veritas Pathways partners with universities that value strong academic preparation and
-                        international student success. Our progression network includes institutions offering recognized
+                        international student success. Our progression network includes institutions offering recognised
                         degrees across key subject areas such as business, health sciences, engineering, computing, and
                         social sciences.
                     </p>
@@ -270,13 +270,13 @@ const Course = ({
                                 </div>
                             )}
                         </div>
-                        {/* By Countries */}
+                        {/* By Country */}
                         <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
                             <button
                                 onClick={() => setIsCountryOpen(!isCountryOpen)}
                                 className="w-full flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                             >
-                                <span>By Countries</span>
+                                <span>By Country</span>
                                 <ChevronDown className={`w-5 h-5 transition-transform ${isCountryOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isCountryOpen && (
@@ -352,7 +352,7 @@ const Course = ({
                             onClick={() => setIsFiltersOpen(false)}
                             className="w-full py-3 rounded-lg bg-[#1BA39C] text-white font-semibold hover:bg-[#169488] transition-colors"
                         >
-                            Show {pagination.total} results
+                            Show {pagination.total.toLocaleString('en-GB')} {pagination.total === 1 ? 'result' : 'results'}
                         </button>
                     </div>
                     </aside>
@@ -365,7 +365,7 @@ const Course = ({
                         {/* top-29 (116px) clears the sticky navbar: info bar + main bar. */}
                         <div className="sticky top-29 z-20 bg-white pt-3 pb-4 mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-gray-100 ">
                             <div className="text-sm text-gray-600 w-full sm:w-auto order-2 sm:order-none">
-                                Your search has returned <span className="font-bold text-teal-600">{pagination.total}</span> results.
+                                Your search has returned <span className="font-bold text-teal-600">{pagination.total.toLocaleString('en-GB')}</span> {pagination.total === 1 ? 'result' : 'results'}.
                             </div>
                             <div className="flex flex-1 sm:flex-none items-center gap-2 sm:w-80">
                             <button
@@ -383,7 +383,7 @@ const Course = ({
                             <div className="relative flex-1">
                                 <input
                                     type="text"
-                                    placeholder="Search Subject"
+                                    placeholder="Search subjects..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white relative z-30"

@@ -44,7 +44,7 @@ const ProgrammeRequirements = ({ programme, showHeading, hasNotes }) => {
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">Overall Score</span>
                             <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center shrink-0">
-                                <span className="text-white font-bold">{programme.eap?.overall || '—'}</span>
+                                <span className={`text-white font-bold ${programme.eap?.overall ? '' : 'text-xs'}`}>{programme.eap?.overall || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -55,7 +55,7 @@ const ProgrammeRequirements = ({ programme, showHeading, hasNotes }) => {
                             <div key={key} className="flex justify-between items-center">
                                 <span className="text-sm text-gray-600">{label}</span>
                                 <span className="text-sm font-semibold text-gray-900">
-                                    {programme.eap?.[key] || '—'}
+                                    {programme.eap?.[key] || 'N/A'}
                                 </span>
                             </div>
                         ))}

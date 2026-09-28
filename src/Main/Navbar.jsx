@@ -19,9 +19,9 @@ const Navbar = () => {
             path: "/university-progression",
 
         },
-        { name: "Application Process", path: "/application-process" },
-    
-        { name: "FAQ", path: "/faq" },
+        { name: "Application Form", path: "/application" },
+        // Jumps to the FAQ section of the home page, from any page.
+        { name: "FAQ", path: "/#faq" },
     ];
 
     return (
@@ -36,7 +36,7 @@ const Navbar = () => {
                                 Privacy Policy
                             </Link>
                             <Link href="/terms-of-use" className="hover:opacity-80 transition">
-                                Terms of Use
+                                Terms and Conditions
                             </Link>
                         </div>
 
@@ -124,13 +124,13 @@ const Navbar = () => {
                                                                         href="/university-progression/undergraduate"
                                                                         className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
                                                                     >
-                                                                        Undergraduate Programs
+                                                                        Undergraduate Programmes
                                                                     </Link>
                                                                     <Link
                                                                         href="/university-progression/postgraduate"
                                                                         className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
                                                                     >
-                                                                        Postgraduate Programs
+                                                                        Postgraduate Programmes
                                                                     </Link>
                                                                 </>
                                                             )}
@@ -243,14 +243,14 @@ const Navbar = () => {
                                                                 className="text-gray-600 hover:text-[#1BA39C] transition"
                                                                 onClick={() => setIsOpen(false)}
                                                             >
-                                                                Undergraduate Programs
+                                                                Undergraduate Programmes
                                                             </Link>
                                                             <Link
                                                                 href="/university-progression/postgraduate"
                                                                 className="text-gray-600 hover:text-[#1BA39C] transition"
                                                                 onClick={() => setIsOpen(false)}
                                                             >
-                                                                Postgraduate Programs
+                                                                Postgraduate Programmes
                                                             </Link>
                                                         </>
                                                     )}

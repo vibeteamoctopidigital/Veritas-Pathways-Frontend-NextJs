@@ -11,11 +11,13 @@ import ottawa from '../../assets/ify/universities/ottawa.png';
 import queenMary from '../../assets/ify/universities/queen-mary.png';
 import manchester from '../../assets/ify/universities/manchester.png';
 
+import asic from '../../assets/ify/accreditations/asic.png';
 import ncuk from '../../assets/ify/accreditations/ncuk.png';
 import othm from '../../assets/ify/accreditations/othm.webp';
 import languagecert from '../../assets/ify/accreditations/languagecert.jpeg';
 import ifg from '../../assets/ify/accreditations/ifg.png';
-import logoPrint from '../../assets/ify/accreditations/logo-print.png';
+import cla from '../../assets/ify/accreditations/logo-print.png';
+import ico from '../../assets/ify/accreditations/ico.png';
 
 export const partnerLogos = [
     { name: 'University of Birmingham', image: birmingham },
@@ -30,12 +32,16 @@ export const partnerLogos = [
     { name: 'University of Manchester', image: manchester },
 ];
 
+// Same logos, in the same order, as the "Our accreditations" row on
+// https://veritaspathways.co.uk/international-foundation-year/.
 export const accreditationLogos = [
+    { name: 'ASIC Accredited 2025-26', image: asic },
     { name: 'NCUK', image: ncuk },
-    { name: 'OTHM', image: othm },
-    { name: 'LanguageCert', image: languagecert },
     { name: 'International Foundation Group', image: ifg },
-    { name: 'Accreditation', image: logoPrint },
+    { name: 'OTHM Qualifications', image: othm },
+    { name: 'LanguageCert', image: languagecert },
+    { name: 'CLA', image: cla },
+    { name: "ICO, Information Commissioner's Office", image: ico },
 ];
 
 export default partnerLogos;

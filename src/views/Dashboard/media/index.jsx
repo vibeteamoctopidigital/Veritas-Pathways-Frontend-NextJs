@@ -201,7 +201,7 @@ const MediaPage = () => {
               // new one and uploading is what creates it.
               setActiveFolder(name.trim().toLowerCase());
               setPage(1);
-              toast.success(`Now viewing "${name.trim().toLowerCase()}" — upload files to create it`);
+              toast.success(`Now viewing "${name.trim().toLowerCase()}". Upload files to create it.`);
             }}
             className="text-xs font-medium text-primary hover:text-primary-700"
           >

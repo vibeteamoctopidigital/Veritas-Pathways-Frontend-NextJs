@@ -128,7 +128,7 @@ const EditModal = ({ isOpen, onClose, country, onSave, mode = 'edit' }) => {
 
                     <ImageUploadField
                         key={pickerKey}
-                        label="Country Flag (optional — shown automatically)"
+                        label="Country Flag (optional, shown automatically)"
                         existingUrl={mode === 'edit' ? country?.flag?.url : null}
                         fallbackUrl={autoFlagUrl}
                         fallbackHint={

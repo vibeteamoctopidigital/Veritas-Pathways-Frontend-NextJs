@@ -30,7 +30,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${nunito.variable}`}>
+    // data-scroll-behavior tells Next.js that index.css turns on smooth
+    // scrolling, so it disables it while changing pages.
+    <html lang="en" data-scroll-behavior="smooth" className={`${jakarta.variable} ${nunito.variable}`}>
       <body>
         {children}
         <Providers />

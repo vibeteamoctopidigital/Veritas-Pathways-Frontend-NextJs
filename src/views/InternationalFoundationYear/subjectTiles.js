@@ -1,7 +1,7 @@
 // Subject tile photography, downloaded from the live site so the page does not
 // hotlink veritaspathways.co.uk.
 //
-// Chemistry has no dedicated image on the live page — it falls back to the
+// Chemistry has no dedicated image on the live page, so it falls back to the
 // generic tile used there (Rectangle-9435-3). Drop a Chemistry.jpg in and swap
 // the import when one exists.
 import ArtDesign from '../../assets/ify/subjects/Art-Design.jpg';

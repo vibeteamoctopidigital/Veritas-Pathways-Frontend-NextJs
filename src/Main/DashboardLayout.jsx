@@ -4,7 +4,7 @@ import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, LayoutDashboard, GraduationCap, Building2, Globe, LogOut, User, Image as ImageIcon } from 'lucide-react';
+import { Menu, LayoutDashboard, GraduationCap, Building2, Globe, LogOut, User, Image as ImageIcon, MessageSquare, ShieldCheck } from 'lucide-react';
 import { getUser, clearAuth, isAuthenticated } from '../utils/auth';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import logo from '../assets/Logo.png';
@@ -15,6 +15,8 @@ const menuItems = [
   { path: '/dashboard/university', label: 'Universities', icon: Building2 },
   { path: '/dashboard/country', label: 'Countries', icon: Globe },
   { path: '/dashboard/media', label: 'Media Library', icon: ImageIcon },
+  { path: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
+  { path: '/dashboard/admins', label: 'Admins', icon: ShieldCheck },
 ];
 
 // False during the server render and hydration, true once in the browser.
@@ -69,7 +71,7 @@ const SidebarContent = ({ pathname, user, onNavigate, onLogout }) => (
         className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
       >
         <LogOut className="h-5 w-5" />
-        <span className="font-medium">Logout</span>
+        <span className="font-medium">Log out</span>
       </button>
     </div>
   </div>
@@ -123,7 +125,9 @@ const DashboardLayout = ({ children }) => {
       </Sheet>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:ml-64">
+      {/* min-w-0 lets wide tables scroll inside their own box instead of
+          stretching the page. */}
+      <div className="flex-1 min-w-0 flex flex-col lg:ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm px-4 lg:px-6 py-4 sticky top-0 z-40">
           <div className="flex items-center gap-4">

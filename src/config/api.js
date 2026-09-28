@@ -189,3 +189,46 @@ baseAPI.course = {
     body: data,
   }),
 };
+baseAPI.contact = {
+  // Public contact form.
+  submit: (data) => baseAPI.request('/contact', {
+    method: 'POST',
+    body: data,
+  }),
+  // Admin only: the dashboard's message inbox.
+  getAll: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.unread) queryParams.append('unread', 'true');
+    const query = queryParams.toString();
+    return baseAPI.request(`/contact${query ? `?${query}` : ''}`);
+  },
+  setRead: (id, isRead) => baseAPI.request(`/contact/${id}`, {
+    method: 'PATCH',
+    body: { isRead },
+  }),
+  remove: (id) => baseAPI.request(`/contact/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Admin accounts (dashboard > Admins). Every call is admin only.
+baseAPI.users = {
+  getAll: () => baseAPI.request('/users'),
+  create: (data) => baseAPI.request('/users', {
+    method: 'POST',
+    body: data,
+  }),
+  update: (id, data) => baseAPI.request(`/users/${id}`, {
+    method: 'PATCH',
+    body: data,
+  }),
+  resetPassword: (id, password) => baseAPI.request(`/users/${id}/password`, {
+    method: 'PATCH',
+    body: { password },
+  }),
+  remove: (id) => baseAPI.request(`/users/${id}`, {
+    method: 'DELETE',
+  }),
+};
