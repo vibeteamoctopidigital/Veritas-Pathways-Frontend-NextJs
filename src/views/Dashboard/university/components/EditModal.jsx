@@ -166,7 +166,7 @@ const EditModal = ({ isOpen, onClose, university, onSave, mode = 'edit' }) => {
                         <button
                             type="submit"
                             disabled={uploading || saving}
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            className="px-4 py-2 text-sm font-medium text-white bg-[#22B2A8] rounded-md hover:bg-[#1a9d8f] transition-colors disabled:opacity-50"
                         >
                             {saving ? 'Saving...' : (mode === 'edit' ? 'Save Changes' : 'Create University')}
                         </button>

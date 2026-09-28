@@ -148,6 +148,9 @@ baseAPI.course = {
     method: 'PATCH',
     body: data,
   }),
+  deleteCourse: (id) => baseAPI.request(`/course/${id}`, {
+    method: 'DELETE',
+  }),
   getUniversities: (params = {}) => {
     const queryParams = new URLSearchParams();
     if (params.search) queryParams.append('search', params.search);

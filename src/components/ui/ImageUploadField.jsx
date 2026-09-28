@@ -60,7 +60,7 @@ const ImageUploadField = ({
 
             <div className="flex items-start gap-4">
                 {/* Preview */}
-                <div className="relative w-20 h-20 shrink-0 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                <div className="relative w-36 h-20 shrink-0 rounded-lg border border-gray-200 bg-white p-2 flex items-center justify-center overflow-hidden">
                     {previewUrl ? (
                         <img
                             src={previewUrl}

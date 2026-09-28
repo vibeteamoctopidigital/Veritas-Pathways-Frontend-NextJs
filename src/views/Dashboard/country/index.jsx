@@ -89,7 +89,7 @@ return (
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2 bg-[#22B2A8] text-white rounded-md hover:bg-[#1a9d8f] transition whitespace-nowrap"
         >
           <Plus className="h-4 w-4" />
           Add Country

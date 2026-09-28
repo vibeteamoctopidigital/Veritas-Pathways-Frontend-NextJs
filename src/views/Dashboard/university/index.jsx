@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Edit, Trash2, Plus, Building2 } from "lucide-react";
-import { baseAPI } from "../../../config/api";
+import { baseAPI, resolveMediaUrl } from "../../../config/api";
 import { formatCountryName } from "../../../utils/formatName";
 import EditModal from "./components/EditModal";
 import DeleteModal from "../../../components/ui/DeleteModal";
@@ -85,7 +85,7 @@ const UniversityPage = () => {
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2 bg-[#22B2A8] text-white rounded-md hover:bg-[#1a9d8f] transition whitespace-nowrap"
         >
           <Plus className="h-4 w-4" />
           Add University  
@@ -143,9 +143,11 @@ const UniversityPage = () => {
                       <div className="text-gray-900 text-sm">{(page - 1) * 10 + index + 1}</div>
                     </td>
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                      {/* Logos are mostly wide, so the box is too; object-contain
+                          shows the whole logo instead of cropping it square. */}
+                      <div className="w-32 h-14 bg-white border border-gray-200 rounded-lg p-1.5 flex items-center justify-center overflow-hidden">
                         {university.universityLogo?.url ? (
-                          <img src={university.universityLogo.url} alt={university.name} className="w-full h-full object-cover" />
+                          <img src={resolveMediaUrl(university.universityLogo.url)} alt={university.name} className="max-w-full max-h-full object-contain" />
                         ) : (
                           <Building2 className="h-6 w-6 text-gray-400" />
                         )}
