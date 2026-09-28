@@ -5,6 +5,7 @@ import { Search, Trash2, Upload, Copy, Check, Image as ImageIcon, FileText, Hard
 import toast from "react-hot-toast";
 import { baseAPI, MAX_UPLOAD_BATCH, resolveMediaUrl } from "../../../config/api";
 import DeleteModal from "../../../components/ui/DeleteModal";
+import { rules } from "../../../utils/validation";
 
 const PAGE_SIZE = 24;
 
@@ -38,6 +39,7 @@ const MediaPage = () => {
   const [folders, setFolders] = useState([]);
   // '' = all files, '__none__' = files with no folder.
   const [activeFolder, setActiveFolder] = useState("");
+  const [newFolder, setNewFolder] = useState({ open: false, name: "", error: "" });
   const fileInputRef = useRef(null);
 
   const fetchMedia = useCallback(async () => {
@@ -193,21 +195,61 @@ const MediaPage = () => {
             <Layers className="h-4 w-4 text-primary" />
             Folders
           </h3>
-          <button
-            onClick={async () => {
-              const name = window.prompt("New folder name (e.g. logos, flags)");
-              if (!name?.trim()) return;
-              // Folders exist only through the files in them, so selecting the
-              // new one and uploading is what creates it.
-              setActiveFolder(name.trim().toLowerCase());
-              setPage(1);
-              toast.success(`Now viewing "${name.trim().toLowerCase()}". Upload files to create it.`);
-            }}
-            className="text-xs font-medium text-primary hover:text-primary-700"
-          >
-            + New folder
-          </button>
+          {!newFolder.open && (
+            <button
+              onClick={() => setNewFolder({ open: true, name: "", error: "" })}
+              className="text-xs font-medium text-primary hover:text-primary-700"
+            >
+              + New folder
+            </button>
+          )}
         </div>
+
+        {/* Inline rather than window.prompt, so the name can be checked with a
+            clear message. Folders exist only through the files in them, so
+            selecting the new one and uploading is what creates it. */}
+        {newFolder.open && (
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              const name = newFolder.name.trim().toLowerCase();
+              const error = rules.required("Folder name")(name) || rules.folderName()(name);
+              if (error) {
+                setNewFolder((prev) => ({ ...prev, error }));
+                return;
+              }
+              setActiveFolder(name);
+              setPage(1);
+              setNewFolder({ open: false, name: "", error: "" });
+              toast.success(`Now viewing "${name}". Upload files to create it.`);
+            }}
+            className="mb-3"
+          >
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                value={newFolder.name}
+                onChange={(e) => setNewFolder({ open: true, name: e.target.value, error: "" })}
+                maxLength={40}
+                placeholder="Folder name, e.g. logos or flags"
+                aria-invalid={Boolean(newFolder.error)}
+                className={`flex-1 px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-[#22B2A8] focus:border-transparent ${newFolder.error ? "border-red-500" : "border-gray-300"}`}
+              />
+              <button type="submit" className="px-3 py-1.5 rounded-md bg-[#22B2A8] text-white text-sm hover:bg-[#1a9d8f]">
+                Create
+              </button>
+              <button
+                type="button"
+                onClick={() => setNewFolder({ open: false, name: "", error: "" })}
+                className="px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+            </div>
+            {newFolder.error && <p className="mt-1 text-xs text-red-600">{newFolder.error}</p>}
+          </form>
+        )}
 
         <div className="flex flex-wrap gap-2">
           {[

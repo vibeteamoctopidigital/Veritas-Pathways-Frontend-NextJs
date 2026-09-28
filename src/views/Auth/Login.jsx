@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import { isAuthenticated, setAuthToken, setRefreshToken, setUser } from '../../utils/auth';
 import { API_BASE_URL } from '../../config/api';
+import { rules } from '../../utils/validation';
 import logo from '../../assets/Logo.png';
 import heroImage from '../../assets/ify/hero.jpg';
 
@@ -28,6 +29,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Only the format is checked here; whether the account exists is the API's job.
+    const problem = rules.email()(email) || (password ? null : 'Enter your password');
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setError('');
     setLoading(true);
 
@@ -105,7 +112,7 @@ const Login = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                   Email

@@ -3,6 +3,16 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { baseAPI } from '../../config/api';
+import { errorsFromResponse, hasErrors, rules, validate } from '../../utils/validation';
+
+// Same rules the API applies (see src/utils/validation.js).
+const SCHEMA = {
+    firstName: rules.personName('First name'),
+    lastName: rules.personName('Last name'),
+    email: rules.email(),
+    phone: rules.phone(),
+    message: (value) => (value && value.length > 5000 ? 'Message must be 5,000 characters or fewer' : null),
+};
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', message: '', website: '' };
 
@@ -31,8 +41,19 @@ const ContactForm = () => {
         setErrors((prev) => ({ ...prev, [field]: undefined }));
     };
 
+    // Check a field when the visitor leaves it, so mistakes show early.
+    const check = (field) => () => {
+        const message = SCHEMA[field]?.(form[field]);
+        setErrors((prev) => ({ ...prev, [field]: message || undefined }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const clientErrors = validate(form, SCHEMA);
+        if (hasErrors(clientErrors)) {
+            setErrors(clientErrors);
+            return;
+        }
         setStatus('sending');
         setErrors({});
 
@@ -44,13 +65,7 @@ const ContactForm = () => {
                 setForm(EMPTY);
                 return;
             }
-            // Validation errors arrive as [{ path: 'body.email', message }].
-            const fieldErrors = {};
-            (Array.isArray(response?.error) ? response.error : []).forEach(({ path, message }) => {
-                const field = String(path).replace(/^body\./, '');
-                fieldErrors[field] ??= message;
-            });
-            setErrors(fieldErrors);
+            setErrors(errorsFromResponse(response));
             setStatus('failed');
         } catch {
             setStatus('failed');
@@ -77,7 +92,7 @@ const ContactForm = () => {
     const hasFieldErrors = Object.values(errors).some(Boolean);
 
     return (
-        <form onSubmit={handleSubmit} noValidate={false} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First name" id="contact-first-name" error={errors.firstName}>
                     <input
@@ -88,6 +103,8 @@ const ContactForm = () => {
                         maxLength={100}
                         value={form.firstName}
                         onChange={set('firstName')}
+                        onBlur={check('firstName')}
+                        aria-invalid={Boolean(errors.firstName)}
                         placeholder="Enter first name"
                         className={inputClass}
                     />
@@ -101,6 +118,8 @@ const ContactForm = () => {
                         maxLength={100}
                         value={form.lastName}
                         onChange={set('lastName')}
+                        onBlur={check('lastName')}
+                        aria-invalid={Boolean(errors.lastName)}
                         placeholder="Enter last name"
                         className={inputClass}
                     />
@@ -116,6 +135,8 @@ const ContactForm = () => {
                     maxLength={200}
                     value={form.email}
                     onChange={set('email')}
+                        onBlur={check('email')}
+                        aria-invalid={Boolean(errors.email)}
                     placeholder="Enter email address"
                     className={inputClass}
                 />
@@ -128,10 +149,11 @@ const ContactForm = () => {
                     autoComplete="tel"
                     required
                     maxLength={30}
-                    pattern="[0-9()#&+*\-=. ]+"
-                    title="Only numbers and phone characters (#, -, *, etc.) are accepted."
+                    inputMode="tel"
                     value={form.phone}
                     onChange={set('phone')}
+                        onBlur={check('phone')}
+                        aria-invalid={Boolean(errors.phone)}
                     placeholder="Enter phone number"
                     className={inputClass}
                 />
@@ -144,6 +166,8 @@ const ContactForm = () => {
                     maxLength={5000}
                     value={form.message}
                     onChange={set('message')}
+                        onBlur={check('message')}
+                        aria-invalid={Boolean(errors.message)}
                     placeholder="Your message"
                     className={`${inputClass} resize-y`}
                 />

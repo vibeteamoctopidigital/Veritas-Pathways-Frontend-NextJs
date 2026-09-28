@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { baseAPI } from "../../../config/api";
 import { getUser } from "../../../utils/auth";
 import DeleteModal from "../../../components/ui/DeleteModal";
+import { hasErrors, rules, validate } from "../../../utils/validation";
 
 const MIN_PASSWORD = 8;
 
@@ -100,8 +101,14 @@ const CreateModal = ({ onClose, onSaved }) => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (form.password !== form.confirm) {
-      setErrors({ confirm: "Passwords do not match" });
+    const clientErrors = validate(form, {
+      name: rules.personName("Full name"),
+      email: rules.email(),
+      password: rules.password(),
+    });
+    if (form.password !== form.confirm) clientErrors.confirm = "Passwords do not match";
+    if (hasErrors(clientErrors)) {
+      setErrors(clientErrors);
       return;
     }
     setSaving(true);
@@ -123,14 +130,14 @@ const CreateModal = ({ onClose, onSaved }) => {
 
   return (
     <Modal title="Add admin" onClose={onClose}>
-      <form onSubmit={submit} className="p-6 space-y-4">
+      <form onSubmit={submit} noValidate className="p-6 space-y-4">
         <Field label="Full name" error={errors.name}>
           <input value={form.name} onChange={set("name")} required maxLength={100} autoComplete="name" className={inputClass} placeholder="e.g. Jane Smith" />
         </Field>
         <Field label="Email" error={errors.email}>
           <input type="email" value={form.email} onChange={set("email")} required autoComplete="email" className={inputClass} placeholder="name@veritaspathways.co.uk" />
         </Field>
-        <Field label={`Password (at least ${MIN_PASSWORD} characters)`} error={errors.password}>
+        <Field label={`Password (at least ${MIN_PASSWORD} characters, with a letter and a number)`} error={errors.password}>
           <PasswordInput value={form.password} onChange={set("password")} placeholder="Create a password" />
         </Field>
         <Field label="Confirm password" error={errors.confirm}>
@@ -154,6 +161,11 @@ const EditModal = ({ account, isSelf, onClose, onSaved }) => {
 
   const submit = async (e) => {
     e.preventDefault();
+    const clientErrors = validate({ name }, { name: rules.personName("Full name") });
+    if (hasErrors(clientErrors)) {
+      setErrors(clientErrors);
+      return;
+    }
     setSaving(true);
     const response = await baseAPI.users.update(account._id, { name, role }).catch(() => null);
     setSaving(false);
@@ -168,7 +180,7 @@ const EditModal = ({ account, isSelf, onClose, onSaved }) => {
 
   return (
     <Modal title="Edit account" onClose={onClose}>
-      <form onSubmit={submit} className="p-6 space-y-4">
+      <form onSubmit={submit} noValidate className="p-6 space-y-4">
         <p className="text-sm text-gray-600">{account.email}</p>
         <Field label="Full name" error={errors.name}>
           <input value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} className={inputClass} />
@@ -200,8 +212,10 @@ const PasswordModal = ({ account, onClose }) => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (password !== confirm) {
-      setErrors({ confirm: "Passwords do not match" });
+    const clientErrors = validate({ password }, { password: rules.password() });
+    if (password !== confirm) clientErrors.confirm = "Passwords do not match";
+    if (hasErrors(clientErrors)) {
+      setErrors(clientErrors);
       return;
     }
     setSaving(true);
@@ -218,11 +232,11 @@ const PasswordModal = ({ account, onClose }) => {
 
   return (
     <Modal title="Reset password" onClose={onClose}>
-      <form onSubmit={submit} className="p-6 space-y-4">
+      <form onSubmit={submit} noValidate className="p-6 space-y-4">
         <p className="text-sm text-gray-600">
           Set a new password for <span className="font-medium text-gray-900">{account.name || account.email}</span>.
         </p>
-        <Field label={`New password (at least ${MIN_PASSWORD} characters)`} error={errors.password}>
+        <Field label={`New password (at least ${MIN_PASSWORD} characters, with a letter and a number)`} error={errors.password}>
           <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password" />
         </Field>
         <Field label="Confirm new password" error={errors.confirm}>
